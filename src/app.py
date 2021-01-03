@@ -26,17 +26,79 @@ def sitemap():
     return generate_sitemap(app)
 
 @app.route('/members', methods=['GET'])
-def handle_hello():
-
+def all_members():
     # this is how you can use the Family datastructure by calling its methods
     members = jackson_family.get_all_members()
-    response_body = {
-        "hello": "world",
-        "family": members
-    }
+    return jsonify(members),200
+
+@app.route('/members/<id>', methods=['GET'])
+def get_member(id):
+    member = jackson_family.get_member(id)
+    return jsonify(member),200
+
+@app.route('/members/<id>', methods=['DELETE'])
+def get_member(id):
+    member = jackson_family.delete_member(id)
+    return jsonify(member),200
+
+@app.route('/member', methods=['POST'])
+def create_one_member ():
+    id = request.json.get('id')
+    first_name = request.json.get('first_name')
+    last_name = request.json.get('last_name')
+    age = request.jason.get('age')
+    lucky_number = request.get('lucky_number')
+
+    if not id:
+        id = jackson_family._generateId()
+    if not first_name:
+        return jsonify({"msg": "We need yor name"}), 400
+    if not age:
+        return jsonify({"msg": "We need yor age"}), 400
+    if not lucky_number:
+        return jsonify({"msg": "We need yor lucky_number"}), 400
+
+    member = {}
+    member['id'] = id
+    member['first_name'] = first_name
+    member['last_name'] = last_name
+    member['age'] = age
+    member['lucky_number'] = lucky_number
+
+    jackson_family.add_member(member)
+    return jsonify({"msg": "Member was create succefull"}), 200
+
+    @app.route('/member', methods=['PUT'])
+    def edit_member ():
+        id = request.json.get('id')
+        first_name = request.json.get('first_name')
+        last_name = request.json.get('last_name')
+        age = request.jason.get('age')
+        lucky_number = request.get('lucky_number')
 
 
-    return jsonify(response_body), 200
+
+        if not id:
+            id = jackson_family._generateId()
+        if not first_name:
+            return jsonify({"msg": "We need yor name"}), 400
+        if not age:
+            return jsonify({"msg": "We need yor age"}), 400
+        if not lucky_number:
+            return jsonify({"msg": "We need yor lucky_number"}), 400
+
+        member = jackson_family.get_member(id)
+        if not member:
+            return jsonify({"msg": " Not found"}), 404
+        if member:
+            member['id'] = id
+            member['first_name'] = first_name
+            member['last_name'] = last_name
+            member['age'] = age
+            member['lucky_number'] = lucky_number
+
+            jackson_family.update_member(id,member)
+            return jsonify({"msg": "Member was updated"}), 200
 
 # this only runs if `$ python src/app.py` is executed
 if __name__ == '__main__':
